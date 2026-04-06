@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QUALITY EE PROJECTS</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #f3f5f7;
+      min-height: 100vh;
+      color: #1f2937;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .top-header {
+      width: 100%;
+      padding: 18px 20px;
+      background: linear-gradient(90deg, #6d28d9, #e5e7eb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+    }
+
+    .top-header h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 1.5px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .header {
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #6b7280;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .icon-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 24px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+
+    .icon-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+    }
+
+    .icon {
+      font-size: 38px;
+      margin-bottom: 12px;
+    }
+
+    .icon-card h3 {
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .icon-card p {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: white;
+      border-radius: 22px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 2;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+    }
+
+    .close-btn {
+      border: none;
+      background: #ef4444;
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .modal-body {
+      padding: 22px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .label-small {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-select {
+  background: white;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  box-shadow: none;
+}
+
+.btn-select:hover {
+  background: #f9fafb;
+}
+
+.btn-select:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: #9ca3af;
+}
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-header">
+    <h1>QUALITY EE PROJECTS</h1>
+  </header>
+  <div class="app">
+    <div class="header">
+      <h1>GERENCIAMENTO ELETROELETRÔNICO</h1>
+    </div>
+
+    <div class="icon-grid">
+      <div class="icon-card" onclick="openForm('formOcorrencia')">
+        <div class="icon">📝</div>
+        <h3>INPUT DE ERROS</h3>
+        <p>Cadastro de defeitos na base de dados</p>
+      </div>
+
+      <div class="icon-card" onclick="openForm('formInspecao')">
+        <div class="icon">🔍</div>
+        <h3>TODOS OS ERROS</h3>
+        <p>Consulta à base de dados dos defeitos</p>
+      </div>
+
+      <div class="icon-card" onclick="openForm('formCadastro')">
+        <div class="icon">👤</div>
+        <h3>REPOSITÓRIO DE DOCUMENTOS</h3>
+        <p>Acesso à formações, cablagens e SFA</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay único -->
+  <div class="overlay" id="overlay" onclick="closeIfBackdrop(event)">
+    <div class="modal" id="modalContainer"></div>
+  </div>
+
+  <!-- Templates dos formulários -->
+  <template id="formOcorrencia">
+    <div class="modal-header">
+      <h2>INPUT DE ERROS</h2>
+      <button class="close-btn" onclick="closeForm()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Projeto</label>
+          <select>
+            <option>Selecione</option>
+        </div>
+
+        <div class="field">
+          <label>PJI</label>
+          <input type="text" />
+        </div>
+
+        <div class="field">
+          <label>SV</label>
+          <input type="text" />
+        </div>
+
+        <div class="field">
+          <label>Efeito cliente</label>
+          <textarea class="medium"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Modo de falha</label>
+          <textarea class="medium"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Causa</label>
+          <textarea class="medium"></textarea>
+        </div>
+     
+        <div class="field">
+          <label>Calculador</label>
+          <select>
+            <option>Selecione</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Área</label>
+          <select>
+            <option>Selecione</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Estágios PEV</label>
+          <select>
+            <option>Selecione</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Piloto</label>
+          <select>
+            <option>Selecione</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Analista EE</label>
+          <select>
+            <option>Selecione</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Prompt</label>
+          <input type="text" />
+        </div>
+
+        <div class="field">
+          <label>DTC/Ticket PEV</label>
+          <input type="text" />
+        </div>
+
+        <div class="field">
+          <label>Erros em cascata</label>
+          <textarea class="large"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Plano de ação</label>
+          <textarea class="large"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Tempo de análise</label>
+          <input type="text" />
+        </div>
+
+        <div class="field">
+          <label>Tempo de retoque</label>
+          <input type="text" />
+        </div>
+
+        <div class="field">
+          <label>Data de produção</label>
+          <input type="date" />
+        </div>
+
+        <div class="field">
+          <label>Fase</label>
+          <select>
+            <option>Selecione</option>
+          </select>
+        </div>
+
+        <div class="field span-2">
+          <label>Anexos</label>
+          <input type="file" />
+        </div>
+
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="closeForm()">Cancelar</button>
+        <button class="btn btn-primary">Salvar</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="formInspecao">
+    <div class="modal-header">
+      <h2>BASE DE DADOS - DEFEITOS CADASTRADOS</h2>
+      <button class="close-btn" onclick="closeForm()">×</button>
+    </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="closeForm()">Cancelar</button>
+        <button class="btn btn-primary">Salvar</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="formCadastro">
+    <div class="modal-header">
+      <h2>REPOSITÓRIO DE DOCUMENTOS</h2>
+      <button class="close-btn" onclick="closeForm()">×</button>
+    </div>
+
+    <!-- Botão selecionar projeto -->
+    <div class="field">
+      <label class="label-small">Projeto</label>
+<button class="btn btn-select" onclick="mostrarOpcoesProjeto()">
+  R1312
+</button>
+    </div>
+
+    <!-- Opções (inicialmente escondidas) -->
+    <div id="opcoesProjeto" style="display: none; margin-top: 20px;">
+
+      <div class="field">
+        <button class="btn btn-secondary">Cablagens - R1312</button>
+      </div>
+
+      <div class="field">
+        <button class="btn btn-secondary">SFA</button>
+      </div>
+
+      <div class="field">
+        <button class="btn btn-secondary">Arquitetura - R1312</button>
+      </div>
+    
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="closeForm()">Cancelar</button>
+        <button class="btn btn-primary">Salvar</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const modalContainer = document.getElementById('modalContainer');
+
+    function openForm(templateId) {
+      const template = document.getElementById(templateId);
+      modalContainer.innerHTML = template.innerHTML;
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeForm() {
+      overlay.classList.remove('active');
+      modalContainer.innerHTML = '';
+      document.body.style.overflow = 'auto';
+    }
+
+    function closeIfBackdrop(event) {
+      if (event.target === overlay) {
+        closeForm();
+      }
+    }
+
+    function mostrarOpcoesProjeto() {
+    const opcoes = document.getElementById('opcoesProjeto');
+     opcoes.style.display = 'block';
+    }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && overlay.classList.contains('active')) {
+        closeForm();
+      }
+    });
+  </script>
+</body>
+</html>
