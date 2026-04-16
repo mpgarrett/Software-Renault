@@ -37,11 +37,11 @@
 
     .container {
       display: flex;
-      min-height: calc(100vh - 74px);
+      height: calc(100vh - 74px);
     }
 
     .sidebar {
-      width: 380px;
+      width: 420px;
       background: #fff;
       border-right: 1px solid #ddd;
       padding: 20px;
@@ -50,9 +50,11 @@
 
     .content {
       flex: 1;
-      padding: 20px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      min-height: 0;
     }
 
     .box {
@@ -75,12 +77,16 @@
       margin-right: 8px;
     }
 
+    .btn:hover {
+      opacity: 0.94;
+    }
+
     .btn-secondary {
       background: #e5e7eb;
       color: #111827;
     }
 
-    .arquivo {
+    .item {
       border: 1px solid #ddd;
       border-radius: 12px;
       padding: 12px;
@@ -88,243 +94,306 @@
       background: #fafafa;
     }
 
-    .arquivo strong {
+    .item strong {
       display: block;
       margin-bottom: 10px;
       word-break: break-word;
     }
 
-    .preview-box {
-      flex: 1;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      overflow: hidden;
-      min-height: 650px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    .item small {
+      color: #6b7280;
+      display: block;
+      margin-bottom: 10px;
     }
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
+   .preview-box {
+  flex: 1;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 650px;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 650px;
+  border: none;
+  display: block;
+}
 
     .mensagem {
       color: #555;
+      line-height: 1.5;
     }
 
     .preview-hidden {
       display: none;
     }
 
-    img {
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+
+    .titulo-secao {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+
+    .breadcrumb {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #374151;
+      word-break: break-word;
+    }
+
+    .icone {
+      margin-right: 8px;
+    }
+
+    img#imgPreview {
       max-width: 100%;
       max-height: 100%;
+      display: block;
+      margin: 0 auto;
     }
+
   </style>
 </head>
-
 <body>
+  <header class="top-header">
+    <h1>REPOSITÓRIO DE DOCUMENTOS</h1>
+  </header>
 
-<header class="top-header">
-  <h1>REPOSITÓRIO DE DOCUMENTOS</h1>
-</header>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="box">
+        <div><strong>Bucket:</strong> documentos</div>
+        <div id="caminhoAtual" class="breadcrumb"><strong>Caminho:</strong> /</div>
 
-<div class="container">
+        <button class="btn" onclick="carregarItens()">Atualizar</button>
+        <button class="btn btn-secondary" onclick="voltarPasta()">Voltar pasta</button>
+        <button class="btn btn-secondary" onclick="voltarPagina()">Voltar página</button>
 
-  <!-- LADO ESQUERDO -->
-  <aside class="sidebar">
-    <div class="box">
-      <div><strong>Projeto:</strong> R1312</div>
-      <div><strong>Pasta:</strong> SFA</div>
-
-      <button class="btn" onclick="carregarArquivos()">Atualizar</button>
-      <button class="btn btn-secondary" onclick="voltarPagina()">Voltar</button>
-
-      <div id="statusRepositorio">Carregando arquivos...</div>
-    </div>
-
-    <div id="listaArquivos"></div>
-  </aside>
-
-  <!-- LADO DIREITO -->
-  <main class="content">
-
-    <div id="mensagemInicial" class="mensagem">
-      Selecione um arquivo para visualizar.
-    </div>
-
-    <div id="previewWrapper" class="preview-hidden">
-      <h2 id="tituloPreview">Pré-visualização</h2>
-
-      <div class="preview-box">
-        <iframe id="pdfViewer"></iframe>
+        <div id="statusRepositorio" class="status">Carregando itens...</div>
       </div>
+
+      <div id="listaItens">
+        <p class="mensagem">Nenhum item carregado ainda.</p>
+      </div>
+    </aside>
+
+    <main class="content">
+  <div id="mensagemInicial" class="mensagem">
+    Selecione um arquivo para visualizar.
+  </div>
+
+  <div id="previewWrapper" class="preview-hidden">
+    <h2 class="titulo-secao" id="tituloPreview">Pré-visualização</h2>
+    <div class="preview-box" id="previewBox">
+      <iframe id="pdfViewer"></iframe>
     </div>
+  </div>
+</main>
 
-  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = window.supabase;
 
-</div>
+    const SUPABASE_URL = 'https://ozexptcrvvxvbizsuevd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_jXrm5nMbDK5Ki-SwKLxQyw_kiHmr17c';
+    const BUCKET = 'documentos';
 
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
+    const listaItens = document.getElementById('listaItens');
+    const pdfViewer = document.getElementById('pdfViewer');
+    const previewWrapper = document.getElementById('previewWrapper');
+    const mensagemInicial = document.getElementById('mensagemInicial');
+    const tituloPreview = document.getElementById('tituloPreview');
+    const statusRepositorio = document.getElementById('statusRepositorio');
+    const caminhoAtualEl = document.getElementById('caminhoAtual');
+    const previewBox = document.getElementById('previewBox');
 
-const { createClient } = window.supabase;
+    let itens = [];
+    let caminhoAtual = '';
 
-const SUPABASE_URL = 'https://ozexptcrvvxvbizsuevd.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_jXrm5nMbDK5Ki-SwKLxQyw_kiHmr17c';
+    function atualizarBreadcrumb() {
+      caminhoAtualEl.innerHTML = `<strong>Caminho:</strong> /${caminhoAtual}`;
+    }
 
-const BUCKET = 'documentos';
-const CAMINHO_PASTA = 'R1312/SFA';
+    async function carregarItens() {
+      try {
+        atualizarBreadcrumb();
+        statusRepositorio.textContent = 'Carregando itens...';
+        listaItens.innerHTML = '<p class="mensagem">Buscando pastas e arquivos...</p>';
 
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { data, error } = await supabaseClient
+          .storage
+          .from(BUCKET)
+          .list(caminhoAtual, {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: 'name', order: 'asc' }
+          });
 
-const listaArquivos = document.getElementById('listaArquivos');
-const pdfViewer = document.getElementById('pdfViewer');
-const previewWrapper = document.getElementById('previewWrapper');
-const mensagemInicial = document.getElementById('mensagemInicial');
-const tituloPreview = document.getElementById('tituloPreview');
+        if (error) {
+          console.error('Erro ao listar itens:', error);
+          statusRepositorio.textContent = 'Erro ao carregar itens.';
+          listaItens.innerHTML = `<p class="mensagem">Erro: ${error.message}</p>`;
+          return;
+        }
 
-let arquivos = [];
+        itens = data || [];
 
-/* ============================= */
-/* CARREGAR ARQUIVOS */
-/* ============================= */
-async function carregarArquivos() {
+        if (itens.length === 0) {
+          statusRepositorio.textContent = 'Nenhum item encontrado.';
+          listaItens.innerHTML = '<p class="mensagem">Nenhum item encontrado nesta pasta.</p>';
+          return;
+        }
 
-  listaArquivos.innerHTML = 'Carregando...';
+        statusRepositorio.textContent = `${itens.length} item(ns) encontrado(s).`;
+        renderizarLista();
+      } catch (error) {
+        console.error('Erro inesperado ao carregar itens:', error);
+        statusRepositorio.textContent = 'Erro inesperado.';
+        listaItens.innerHTML = `<p class="mensagem">Erro inesperado: ${error.message}</p>`;
+      }
+    }
 
-  const { data, error } = await supabaseClient
-    .storage
-    .from(BUCKET)
-    .list(CAMINHO_PASTA);
+    function renderizarLista() {
+      listaItens.innerHTML = '';
 
-  if (error) {
-    listaArquivos.innerHTML = 'Erro ao carregar';
-    console.error(error);
-    return;
-  }
+      const pastas = itens.filter(item => !temExtensao(item.name));
+      const arquivos = itens.filter(item => temExtensao(item.name));
 
-  arquivos = (data || []).filter(item =>
-  item.name &&
-  (
-    item.name.toLowerCase().endsWith('.pdf') ||
-    item.name.toLowerCase().endsWith('.jpg') ||
-    item.name.toLowerCase().endsWith('.jpeg') ||
-    item.name.toLowerCase().endsWith('.png') ||
-    item.name.toLowerCase().endsWith('.webp')
-  )
-);
+      [...pastas, ...arquivos].forEach((item) => {
+        const isPasta = !temExtensao(item.name);
 
-  if (arquivos.length === 0) {
-    listaArquivos.innerHTML = 'Nenhum arquivo encontrado.';
-    return;
-  }
+        const div = document.createElement('div');
+        div.className = 'item';
 
-  renderizarLista();
-}
+        div.innerHTML = `
+          <strong>
+            <span class="icone">${isPasta ? '📁' : '📄'}</span>${item.name}
+          </strong>
+          <small>${isPasta ? 'Pasta' : 'Arquivo'}</small>
+        `;
 
-/* ============================= */
-/* RENDERIZAR LISTA */
-/* ============================= */
-function renderizarLista() {
+        if (isPasta) {
+          const btnAbrir = document.createElement('button');
+          btnAbrir.className = 'btn';
+          btnAbrir.textContent = 'Abrir pasta';
+          btnAbrir.onclick = () => entrarPasta(item.name);
+          div.appendChild(btnAbrir);
+        } else {
+          const caminhoCompleto = caminhoAtual ? `${caminhoAtual}/${item.name}` : item.name;
+          const { data } = supabaseClient
+            .storage
+            .from(BUCKET)
+            .getPublicUrl(caminhoCompleto);
 
-  listaArquivos.innerHTML = '';
+          const publicUrl = data.publicUrl;
 
-  arquivos.forEach((arquivo) => {
+          const btnVisualizar = document.createElement('button');
+          btnVisualizar.className = 'btn';
+          btnVisualizar.textContent = 'Visualizar';
+          btnVisualizar.onclick = () => visualizarArquivo(publicUrl, item.name);
 
-    const caminho = `${CAMINHO_PASTA}/${arquivo.name}`;
+          const btnDownload = document.createElement('button');
+          btnDownload.className = 'btn btn-secondary';
+          btnDownload.textContent = 'Download';
+          btnDownload.onclick = () => baixarArquivo(publicUrl, item.name);
 
-    const { data } = supabaseClient
-      .storage
-      .from(BUCKET)
-      .getPublicUrl(caminho);
+          div.appendChild(btnVisualizar);
+          div.appendChild(btnDownload);
+        }
 
-    const url = data.publicUrl;
+        listaItens.appendChild(div);
+      });
+    }
 
-    const div = document.createElement('div');
-    div.className = 'arquivo';
+    function entrarPasta(nomePasta) {
+      caminhoAtual = caminhoAtual ? `${caminhoAtual}/${nomePasta}` : nomePasta;
+      carregarItens();
+    }
 
-    div.innerHTML = `
-      <strong>${arquivo.name}</strong>
-      <button class="btn">Visualizar</button>
-      <button class="btn btn-secondary">Download</button>
-    `;
+    function voltarPasta() {
+      if (!caminhoAtual) return;
 
-    const botoes = div.querySelectorAll('button');
+      const partes = caminhoAtual.split('/');
+      partes.pop();
+      caminhoAtual = partes.join('/');
 
-    botoes[0].onclick = () => visualizarArquivo(url, arquivo.name);
-    botoes[1].onclick = () => baixarArquivo(url, arquivo.name);
+      carregarItens();
+    }
 
-    listaArquivos.appendChild(div);
-  });
-}
+    function temExtensao(nome) {
+      return /\.[^/.]+$/.test(nome);
+    }
 
-/* ============================= */
-/* VISUALIZAR */
-/* ============================= */
-function visualizarArquivo(url, nome) {
+    function visualizarArquivo(url, nomeArquivo) {
+  const extensao = nomeArquivo.split('.').pop().toLowerCase();
+  const imagemPreview = document.getElementById('imgPreview');
 
-  const extensao = nome.split('.').pop().toLowerCase();
-
-  tituloPreview.innerText = nome;
+  tituloPreview.textContent = `Pré-visualização - ${nomeArquivo}`;
   previewWrapper.style.display = 'block';
   mensagemInicial.style.display = 'none';
 
-  // remove imagem antiga se existir
-  const imgAntiga = document.getElementById('imgPreview');
-  if (imgAntiga) imgAntiga.remove();
+  if (imagemPreview) {
+    imagemPreview.remove();
+  }
 
   if (extensao === 'pdf') {
-
     pdfViewer.style.display = 'block';
     pdfViewer.src = url;
 
-  } else {
+    window.open(url, '_blank');
+    return;
+  }
 
+  if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extensao)) {
     pdfViewer.style.display = 'none';
     pdfViewer.src = '';
 
     const img = document.createElement('img');
     img.id = 'imgPreview';
     img.src = url;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+    img.style.display = 'block';
+    img.style.margin = '0 auto';
 
     document.querySelector('.preview-box').appendChild(img);
+    return;
   }
+
+  pdfViewer.style.display = 'none';
+  pdfViewer.src = '';
+  tituloPreview.textContent = `Pré-visualização indisponível - ${nomeArquivo}`;
 }
 
-/* ============================= */
-/* DOWNLOAD */
-/* ============================= */
-function baixarArquivo(url, nome) {
+    function baixarArquivo(url, nomeArquivo) {
+      const link = document.createElement('a');
+      link.href = `${url}?download=${encodeURIComponent(nomeArquivo)}`;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
 
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = nome;
+    function voltarPagina() {
+      window.location.href = 'Código colado.html';
+    }
 
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
+    window.carregarItens = carregarItens;
+    window.voltarPasta = voltarPasta;
+    window.voltarPagina = voltarPagina;
 
-/* ============================= */
-/* VOLTAR */
-/* ============================= */
-function voltarPagina() {
-  window.location.href = 'Código colado.html';
-}
-
-/* ============================= */
-/* INICIAR */
-/* ============================= */
-carregarArquivos();
-
-</script>
-
+    carregarItens();
+  </script>
 </body>
 </html>
