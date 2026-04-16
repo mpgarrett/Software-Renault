@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Repositório de Documentos</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #d2d5d8;
+      color: #1f2937;
+    }
+
+    .top-header {
+      width: 100%;
+      padding: 18px 20px;
+      background: linear-gradient(90deg, #6d28d9, #e5e7eb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .top-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 1.5px;
+      margin: 0;
+    }
+
+    .container {
+      display: flex;
+      min-height: calc(100vh - 74px);
+    }
+
+    .sidebar {
+      width: 380px;
+      background: #fff;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .box {
+      background: #eef3ff;
+      border: 1px solid #cfdcff;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #2563eb;
+      color: white;
+      margin-top: 10px;
+      margin-right: 8px;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .arquivo {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+
+    .arquivo strong {
+      display: block;
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .preview-box {
+      flex: 1;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+      min-height: 650px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .mensagem {
+      color: #555;
+    }
+
+    .preview-hidden {
+      display: none;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="top-header">
+  <h1>REPOSITÓRIO DE DOCUMENTOS</h1>
+</header>
+
+<div class="container">
+
+  <!-- LADO ESQUERDO -->
+  <aside class="sidebar">
+    <div class="box">
+      <div><strong>Projeto:</strong> R1312</div>
+      <div><strong>Pasta:</strong> SFA</div>
+
+      <button class="btn" onclick="carregarArquivos()">Atualizar</button>
+      <button class="btn btn-secondary" onclick="voltarPagina()">Voltar</button>
+
+      <div id="statusRepositorio">Carregando arquivos...</div>
+    </div>
+
+    <div id="listaArquivos"></div>
+  </aside>
+
+  <!-- LADO DIREITO -->
+  <main class="content">
+
+    <div id="mensagemInicial" class="mensagem">
+      Selecione um arquivo para visualizar.
+    </div>
+
+    <div id="previewWrapper" class="preview-hidden">
+      <h2 id="tituloPreview">Pré-visualização</h2>
+
+      <div class="preview-box">
+        <iframe id="pdfViewer"></iframe>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const { createClient } = window.supabase;
+
+const SUPABASE_URL = 'https://ozexptcrvvxvbizsuevd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_jXrm5nMbDK5Ki-SwKLxQyw_kiHmr17c';
+
+const BUCKET = 'documentos';
+const CAMINHO_PASTA = 'R1312/SFA';
+
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const listaArquivos = document.getElementById('listaArquivos');
+const pdfViewer = document.getElementById('pdfViewer');
+const previewWrapper = document.getElementById('previewWrapper');
+const mensagemInicial = document.getElementById('mensagemInicial');
+const tituloPreview = document.getElementById('tituloPreview');
+
+let arquivos = [];
+
+/* ============================= */
+/* CARREGAR ARQUIVOS */
+/* ============================= */
+async function carregarArquivos() {
+
+  listaArquivos.innerHTML = 'Carregando...';
+
+  const { data, error } = await supabaseClient
+    .storage
+    .from(BUCKET)
+    .list(CAMINHO_PASTA);
+
+  if (error) {
+    listaArquivos.innerHTML = 'Erro ao carregar';
+    console.error(error);
+    return;
+  }
+
+  arquivos = (data || []).filter(item =>
+  item.name &&
+  (
+    item.name.toLowerCase().endsWith('.pdf') ||
+    item.name.toLowerCase().endsWith('.jpg') ||
+    item.name.toLowerCase().endsWith('.jpeg') ||
+    item.name.toLowerCase().endsWith('.png') ||
+    item.name.toLowerCase().endsWith('.webp')
+  )
+);
+
+  if (arquivos.length === 0) {
+    listaArquivos.innerHTML = 'Nenhum arquivo encontrado.';
+    return;
+  }
+
+  renderizarLista();
+}
+
+/* ============================= */
+/* RENDERIZAR LISTA */
+/* ============================= */
+function renderizarLista() {
+
+  listaArquivos.innerHTML = '';
+
+  arquivos.forEach((arquivo) => {
+
+    const caminho = `${CAMINHO_PASTA}/${arquivo.name}`;
+
+    const { data } = supabaseClient
+      .storage
+      .from(BUCKET)
+      .getPublicUrl(caminho);
+
+    const url = data.publicUrl;
+
+    const div = document.createElement('div');
+    div.className = 'arquivo';
+
+    div.innerHTML = `
+      <strong>${arquivo.name}</strong>
+      <button class="btn">Visualizar</button>
+      <button class="btn btn-secondary">Download</button>
+    `;
+
+    const botoes = div.querySelectorAll('button');
+
+    botoes[0].onclick = () => visualizarArquivo(url, arquivo.name);
+    botoes[1].onclick = () => baixarArquivo(url, arquivo.name);
+
+    listaArquivos.appendChild(div);
+  });
+}
+
+/* ============================= */
+/* VISUALIZAR */
+/* ============================= */
+function visualizarArquivo(url, nome) {
+
+  const extensao = nome.split('.').pop().toLowerCase();
+
+  tituloPreview.innerText = nome;
+  previewWrapper.style.display = 'block';
+  mensagemInicial.style.display = 'none';
+
+  // remove imagem antiga se existir
+  const imgAntiga = document.getElementById('imgPreview');
+  if (imgAntiga) imgAntiga.remove();
+
+  if (extensao === 'pdf') {
+
+    pdfViewer.style.display = 'block';
+    pdfViewer.src = url;
+
+  } else {
+
+    pdfViewer.style.display = 'none';
+    pdfViewer.src = '';
+
+    const img = document.createElement('img');
+    img.id = 'imgPreview';
+    img.src = url;
+
+    document.querySelector('.preview-box').appendChild(img);
+  }
+}
+
+/* ============================= */
+/* DOWNLOAD */
+/* ============================= */
+function baixarArquivo(url, nome) {
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nome;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+/* ============================= */
+/* VOLTAR */
+/* ============================= */
+function voltarPagina() {
+  window.location.href = 'Código colado.html';
+}
+
+/* ============================= */
+/* INICIAR */
+/* ============================= */
+carregarArquivos();
+
+</script>
+
+</body>
+</html>
