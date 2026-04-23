@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Repositório de Documentos</title>
+  <input type="file" id="inputUpload">
+<button onclick="enviarArquivo()">Enviar</button>
 
   <style>
     * {
@@ -107,12 +109,12 @@
     }
 
    .preview-box {
-  flex: 1;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  overflow: hidden;
-  min-height: 650px;
+    flex: 1;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 650px;
 }
 
 iframe {
@@ -199,6 +201,7 @@ iframe {
   </div>
 </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const { createClient } = window.supabase;
@@ -224,6 +227,38 @@ iframe {
     function atualizarBreadcrumb() {
       caminhoAtualEl.innerHTML = `<strong>Caminho:</strong> /${caminhoAtual}`;
     }
+
+    async function uploadArquivo(file, caminho) {
+
+  let arquivoFinal = file;
+  let nomeFinal = file.name;
+
+  const extensao = file.name.split('.').pop().toLowerCase();
+
+  // 🔥 CONVERSÃO AUTOMÁTICA
+  if (extensao === 'tif' || extensao === 'tiff') {
+    console.log('Convertendo TIFF...');
+
+    const blobConvertido = await converterTiffParaPng(file);
+
+    nomeFinal = file.name.replace(/\.(tif|tiff)$/i, '.png');
+    arquivoFinal = blobConvertido;
+  }
+
+  const { error } = await supabaseClient.storage
+    .from('documentos')
+    .upload(`${caminho}/${nomeFinal}`, arquivoFinal, {
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Erro no upload:', error);
+    alert('Erro ao enviar arquivo');
+    return;
+  }
+
+  alert('Upload concluído!');
+}
 
     async function carregarItens() {
       try {
@@ -335,27 +370,105 @@ iframe {
       return /\.[^/.]+$/.test(nome);
     }
 
-    function visualizarArquivo(url, nomeArquivo) {
-  const extensao = nomeArquivo.split('.').pop().toLowerCase();
-  const imagemPreview = document.getElementById('imgPreview');
+    async function converterTiffParaPng(file) {
+  const buffer = await file.arrayBuffer();
 
+  const ifds = UTIF.decode(buffer);
+  UTIF.decodeImages(buffer, ifds);
+
+  const firstPage = ifds[0];
+  const rgba = UTIF.toRGBA8(firstPage);
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = firstPage.width;
+  canvas.height = firstPage.height;
+
+  const imageData = ctx.createImageData(canvas.width, canvas.height);
+  imageData.data.set(rgba);
+  ctx.putImageData(imageData, 0, 0);
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, 'image/png');
+  });
+}
+
+async function uploadArquivo(file, caminho) {
+  let arquivoFinal = file;
+  let nomeFinal = file.name;
+
+  const extensao = file.name.split('.').pop().toLowerCase();
+
+  // 🚀 UPLOAD PARA SUPABASE
+  const { data, error } = await supabaseClient.storage
+    .from('documentos')
+    .upload(`${caminho}/${nomeFinal}`, arquivoFinal, {
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Erro no upload:', error);
+    alert('Erro ao enviar arquivo');
+    return;
+  }
+
+  console.log('Upload concluído:', data);
+}
+
+async function enviarArquivo() {
+  const input = document.getElementById('inputUpload');
+  const file = input.files[0];
+
+  if (!file) {
+    alert('Selecione um arquivo');
+    return;
+  }
+
+  const caminho = 'R1312/SFA'; // ou dinâmico
+
+  await uploadArquivo(file, caminho);
+
+  alert('Arquivo enviado com sucesso!');
+}
+
+   function visualizarArquivo(url, nomeArquivo) {
+
+  const extensao = nomeArquivo.split('.').pop().toLowerCase();
+
+  // 👉 ATIVA PREVIEW SEMPRE
   tituloPreview.textContent = `Pré-visualização - ${nomeArquivo}`;
   previewWrapper.style.display = 'block';
   mensagemInicial.style.display = 'none';
 
-  if (imagemPreview) {
-    imagemPreview.remove();
-  }
+  // 👉 LIMPA preview anterior (sem destruir iframe)
+  const canvasAntigo = previewBox.querySelector('canvas');
+  if (canvasAntigo) canvasAntigo.remove();
 
+  const imagemAntiga = document.getElementById('imgPreview');
+  if (imagemAntiga) imagemAntiga.remove();
+
+  // =========================
+  // 🔵 PDF
+  // =========================
   if (extensao === 'pdf') {
+
     pdfViewer.style.display = 'block';
     pdfViewer.src = url;
 
+    // abre em nova aba
     window.open(url, '_blank');
+
     return;
   }
 
+  // =========================
+  // 🟢 IMAGENS
+  // =========================
   if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extensao)) {
+
     pdfViewer.style.display = 'none';
     pdfViewer.src = '';
 
@@ -367,13 +480,64 @@ iframe {
     img.style.display = 'block';
     img.style.margin = '0 auto';
 
-    document.querySelector('.preview-box').appendChild(img);
+    previewBox.appendChild(img);
+
     return;
   }
 
+  // =========================
+  // ⚪ OUTROS TIPOS
+  // =========================
   pdfViewer.style.display = 'none';
   pdfViewer.src = '';
+
   tituloPreview.textContent = `Pré-visualização indisponível - ${nomeArquivo}`;
+}
+
+async function visualizarTiff(url) {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error('Falha no fetch');
+    }
+
+    const buffer = await response.arrayBuffer();
+
+    const ifds = UTIF.decode(buffer);
+
+    if (!ifds || ifds.length === 0) {
+      throw new Error('TIFF inválido');
+    }
+
+    UTIF.decodeImages(buffer, ifds);
+
+    const firstPage = ifds[0];
+    const rgba = UTIF.toRGBA8(firstPage);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = firstPage.width;
+    canvas.height = firstPage.height;
+
+    const imageData = ctx.createImageData(canvas.width, canvas.height);
+    imageData.data.set(rgba);
+    ctx.putImageData(imageData, 0, 0);
+
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+
+    previewBox.appendChild(canvas);
+
+  } catch (erro) {
+    console.error('Erro TIFF:', erro);
+
+    // 🔥 FALLBACK AUTOMÁTICO
+    window.open(url, '_blank');
+
+    tituloPreview.textContent = 'TIFF aberto em nova aba (não suportado no preview)';
+  }
 }
 
     function baixarArquivo(url, nomeArquivo) {
