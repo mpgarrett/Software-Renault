@@ -122,9 +122,6 @@
       animation: fadeIn 0.2s ease;
     }
 
-      
-
-
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -289,11 +286,11 @@
         <p>Consulta à base de dados dos defeitos</p>
       </div>
 
-      <div class="icon-card" onclick="openForm('formCadastro')">
-        <div class="icon">👤</div>
-        <h3>REPOSITÓRIO DE DOCUMENTOS</h3>
-        <p>Acesso à formações, cablagens e SFA</p>
-      </div>
+      <div class="icon-card" onclick="abrirRepositorio()">
+  <div class="icon">👤</div>
+  <h3>REPOSITÓRIO DE DOCUMENTOS</h3>
+  <p>Acesso à formações, cablagens e SFA</p>
+</div>
     </div>
   </div>
 
@@ -310,11 +307,18 @@
     </div>
 
     <div class="modal-body">
+     
       <div class="form-grid">
+
         <div class="field">
           <label>Projeto</label>
-          <select>
+          <Select>
             <option>Selecione</option>
+            <option>R1312</option>
+            <option>XDF</option>
+            <option>EX2</option>
+            <option>EX5</option>
+          </Select>
         </div>
 
         <div class="field">
@@ -346,6 +350,33 @@
           <label>Calculador</label>
           <select>
             <option>Selecione</option>
+            <option>NAV</option>
+            <option>UCH/BCM</option>
+            <option>ATCU</option>
+            <option>ECM</option>
+            <option>Airbag/ECU</option>
+            <option>FRCAM</option>
+            <option>SONAR</option>
+            <option>UPC/USM</option>
+            <option>AVM</option>
+            <option>DCM/TCU</option>
+            <option>FRRAD</option>
+            <option>AMPLI</option>
+            <option>IDM/CDM</option>
+            <option>HFM</option>
+            <option>PBD</option>
+            <option>EPS</option>
+            <option>HVAC</option>
+            <option>ABS</option>
+            <option>WCGS</option>
+            <option>METER/Cluster</option>
+            <option>SOW RL</option>
+            <option>SOW RR</option>
+            <option>ADP</option>
+            <option>TCU/IVC</option>
+            <option>DSMU</option>
+            <option>SGW</option>
+            <option>MTER 2</option>
           </select>
         </div>
 
@@ -353,6 +384,11 @@
           <label>Área</label>
           <select>
             <option>Selecione</option>
+            <option>Produto</option>
+            <option>Processo</option>
+            <option>Logística</option>
+            <option>MOP</option>
+            <option>Fornecedor</option>
           </select>
         </div>
 
@@ -360,6 +396,15 @@
           <label>Estágios PEV</label>
           <select>
             <option>Selecione</option>
+            <option>AFF</option>
+            <option>ST0</option>
+            <option>ST1</option>
+            <option>ST2</option>
+            <option>Paralelismo</option>
+            <option>Rolagem</option>
+            <option>HOD</option>
+            <option>ADAS</option>
+            <option>SEV</option>
           </select>
         </div>
 
@@ -399,12 +444,12 @@
 
         <div class="field">
           <label>Tempo de análise</label>
-          <input type="text" />
+          <input type="time" />
         </div>
 
         <div class="field">
           <label>Tempo de retoque</label>
-          <input type="text" />
+          <input type="time" />
         </div>
 
         <div class="field">
@@ -416,6 +461,10 @@
           <label>Fase</label>
           <select>
             <option>Selecione</option>
+            <option>ABVC</option>
+            <option>ABPT</option>
+            <option>PPC</option>
+            <option>SOP</option>
           </select>
         </div>
 
@@ -482,38 +531,42 @@
   </template>
 
   <script>
-    const overlay = document.getElementById('overlay');
-    const modalContainer = document.getElementById('modalContainer');
+  const overlay = document.getElementById('overlay');
+  const modalContainer = document.getElementById('modalContainer');
 
-    function openForm(templateId) {
-      const template = document.getElementById(templateId);
-      modalContainer.innerHTML = template.innerHTML;
-      overlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
+  function openForm(templateId) {
+    const template = document.getElementById(templateId);
+    modalContainer.innerHTML = template.innerHTML;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeForm() {
+    overlay.classList.remove('active');
+    modalContainer.innerHTML = '';
+    document.body.style.overflow = 'auto';
+  }
+
+  function closeIfBackdrop(event) {
+    if (event.target === overlay) {
+      closeForm();
     }
+  }
 
-    function closeForm() {
-      overlay.classList.remove('active');
-      modalContainer.innerHTML = '';
-      document.body.style.overflow = 'auto';
-    }
-
-    function closeIfBackdrop(event) {
-      if (event.target === overlay) {
-        closeForm();
-      }
-    }
-
-    function mostrarOpcoesProjeto() {
+  function mostrarOpcoesProjeto() {
     const opcoes = document.getElementById('opcoesProjeto');
-     opcoes.style.display = 'block';
-    }
+    opcoes.style.display = 'block';
+  }
 
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape' && overlay.classList.contains('active')) {
-        closeForm();
-      }
-    });
-  </script>
+  function abrirRepositorio() {
+    window.location.href = 'repositorio.html';
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && overlay.classList.contains('active')) {
+      closeForm();
+    }
+  });
+</script>
 </body>
 </html>
